@@ -94,6 +94,9 @@ class _MyAppState extends State<MyApp> {
       }
     } else if (Platform.isMacOS) {
       requestMacOSPermission();
+    } else if (Platform.isWindows) {
+      isNotificationAllowed = true;
+      setState(() {});
     }
   }
 
@@ -120,12 +123,19 @@ class _MyAppState extends State<MyApp> {
       requestBadgePermission: true,
       requestSoundPermission: false,
     );
+    const WindowsInitializationSettings initializationSettingsWindows =
+        WindowsInitializationSettings(
+      appName: 'app_badge_plus_example',
+      appUserModelId: 'me.liolin.app_badge_plus_example',
+      guid: '{e39b1a52-7d8a-4c01-a1f2-8f3b9a0c7d6e}',
+    );
     const InitializationSettings initializationSettings =
         InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
       macOS: initializationSettingsDarwin,
       linux: initializationSettingsLinux,
+      windows: initializationSettingsWindows,
     );
 
     await flutterLocalNotificationsPlugin.initialize(
@@ -146,10 +156,13 @@ class _MyAppState extends State<MyApp> {
     );
     const DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails(badgeNumber: 1);
+    const WindowsNotificationDetails windowsNotificationDetails =
+        WindowsNotificationDetails();
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
       iOS: darwinNotificationDetails,
       macOS: darwinNotificationDetails,
+      windows: windowsNotificationDetails,
     );
     await flutterLocalNotificationsPlugin.show(
       id: 0,

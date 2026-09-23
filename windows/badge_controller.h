@@ -1,6 +1,10 @@
 #ifndef FLUTTER_PLUGIN_APP_BADGE_PLUS_BADGE_CONTROLLER_H_
 #define FLUTTER_PLUGIN_APP_BADGE_PLUS_BADGE_CONTROLLER_H_
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 // windows.h has to come before the headers that build on it.
 #include <windows.h>
 #include <shobjidl.h>
@@ -15,11 +19,13 @@ namespace app_badge_plus {
 // overlay icon instead: the Win32 counterpart of a taskbar badge.
 class BadgeController {
  public:
-  explicit BadgeController(HWND window);
+  BadgeController();
   ~BadgeController();
 
   BadgeController(const BadgeController&) = delete;
   BadgeController& operator=(const BadgeController&) = delete;
+
+  void SetWindow(HWND window);
 
   bool IsSupported() const;
 

@@ -27,6 +27,7 @@ class AppBadgePlusPlugin : public flutter::Plugin {
       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
 
  private:
+  flutter::PluginRegistrarWindows* registrar_;
   std::unique_ptr<BadgeController> badge_controller_;
 };
 

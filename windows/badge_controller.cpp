@@ -1,3 +1,7 @@
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include "badge_controller.h"
 
 // These must be included before the headers that build on them.
@@ -28,8 +32,8 @@ using winrt::Windows::UI::Notifications::BadgeNotification;
 using winrt::Windows::UI::Notifications::BadgeTemplateType;
 using winrt::Windows::UI::Notifications::BadgeUpdateManager;
 
-// Taskbar badge icons are drawn at 16 logical pixels and scaled by the DPI.
-constexpr int kIconSize = 16;
+// Taskbar badge icons are drawn at 32 logical pixels for better visibility.
+constexpr int kIconSize = 32;
 constexpr int kMaxIconSize = 64;
 
 // Counts above this are rendered with the "more than 99" badge that the system
@@ -90,7 +94,7 @@ bool PaintBadge(Gdiplus::Graphics& graphics,
   graphics.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAlias);
   graphics.Clear(Gdiplus::Color(0, 0, 0, 0));
 
-  Gdiplus::SolidBrush background(Gdiplus::Color(kBackgroundColor));
+  Gdiplus::SolidBrush background{Gdiplus::Color(kBackgroundColor)};
   const Gdiplus::REAL edge = 0.5f;
   const Gdiplus::REAL diameter = static_cast<Gdiplus::REAL>(size) - 2 * edge;
   if (graphics.FillEllipse(&background, edge, edge, diameter, diameter) !=
@@ -172,7 +176,7 @@ HICON CreateBadgeIcon(HWND window, const std::wstring& label) {
   {
     // Drawing straight into the DIB keeps the premultiplied alpha that
     // CreateIconIndirect blends with.
-    Gdiplus::Bitmap bitmap(size, size, size * 4, Gdiplus::PixelFormat32bppPARGB,
+    Gdiplus::Bitmap bitmap(size, size, size * 4, PixelFormat32bppPARGB,
                            static_cast<BYTE*>(color_pixels));
     if (bitmap.GetLastStatus() == Gdiplus::Ok) {
       Gdiplus::Graphics graphics(&bitmap);
@@ -223,7 +227,7 @@ HICON CreateBadgeIcon(HWND window, const std::wstring& label) {
 
 }  // namespace
 
-BadgeController::BadgeController(HWND window) : window_(window) {
+BadgeController::BadgeController() {
   const HRESULT com_result = ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
   com_initialized_ = SUCCEEDED(com_result);
 
@@ -261,6 +265,10 @@ BadgeController::~BadgeController() {
   if (com_initialized_) {
     ::CoUninitialize();
   }
+}
+
+void BadgeController::SetWindow(HWND window) {
+  window_ = window;
 }
 
 bool BadgeController::IsSupported() const {
@@ -310,11 +318,13 @@ bool BadgeController::UpdateOverlayBadge(int count) {
     return false;
   }
   const std::wstring label = BadgeLabel(count);
-  HICON icon = CreateBadgeIcon(window_, label);
+  HWND root = ::GetAncestor(window_, GA_ROOT);
+  HWND target_window = root ? root : window_;
+  HICON icon = CreateBadgeIcon(target_window, label);
   if (icon == nullptr) {
     return false;
   }
-  const HRESULT result = taskbar_->SetOverlayIcon(window_, icon, label.c_str());
+  const HRESULT result = taskbar_->SetOverlayIcon(target_window, icon, label.c_str());
   ::DestroyIcon(icon);
   return SUCCEEDED(result);
 }
@@ -323,7 +333,9 @@ bool BadgeController::ClearOverlayBadge() {
   if (window_ == nullptr || taskbar_ == nullptr) {
     return false;
   }
-  return SUCCEEDED(taskbar_->SetOverlayIcon(window_, nullptr, L""));
+  HWND root = ::GetAncestor(window_, GA_ROOT);
+  HWND target_window = root ? root : window_;
+  return SUCCEEDED(taskbar_->SetOverlayIcon(target_window, nullptr, L""));
 }
 
 }  // namespace app_badge_plus

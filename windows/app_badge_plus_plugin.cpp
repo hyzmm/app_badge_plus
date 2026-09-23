@@ -1,3 +1,7 @@
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 #include "app_badge_plus_plugin.h"
 
 // This must be included before many other Windows headers.
@@ -38,11 +42,6 @@ int CountFromArguments(const flutter::EncodableValue* arguments) {
   return 0;
 }
 
-HWND WindowForRegistrar(flutter::PluginRegistrarWindows* registrar) {
-  flutter::FlutterView* view = registrar->GetView();
-  return view != nullptr ? view->GetNativeWindow() : nullptr;
-}
-
 }  // namespace
 
 // static
@@ -65,8 +64,8 @@ void AppBadgePlusPlugin::RegisterWithRegistrar(
 
 AppBadgePlusPlugin::AppBadgePlusPlugin(
     flutter::PluginRegistrarWindows* registrar)
-    : badge_controller_(
-          std::make_unique<BadgeController>(WindowForRegistrar(registrar))) {}
+    : registrar_(registrar),
+      badge_controller_(std::make_unique<BadgeController>()) {}
 
 AppBadgePlusPlugin::~AppBadgePlusPlugin() {}
 
@@ -74,6 +73,13 @@ void AppBadgePlusPlugin::HandleMethodCall(
     const flutter::MethodCall<flutter::EncodableValue>& method_call,
     std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
   if (method_call.method_name() == "updateBadge") {
+    flutter::FlutterView* view = registrar_->GetView();
+    if (view == nullptr) {
+      result->Error("no_window", "No Flutter view available.");
+      return;
+    }
+    HWND hwnd = view->GetNativeWindow();
+    badge_controller_->SetWindow(hwnd);
     const int count = CountFromArguments(method_call.arguments());
     if (badge_controller_->UpdateCount(count)) {
       result->Success();
@@ -82,6 +88,10 @@ void AppBadgePlusPlugin::HandleMethodCall(
                     "Failed to update the app badge on Windows.");
     }
   } else if (method_call.method_name() == "isSupported") {
+    flutter::FlutterView* view = registrar_->GetView();
+    if (view != nullptr) {
+      badge_controller_->SetWindow(view->GetNativeWindow());
+    }
     result->Success(flutter::EncodableValue(badge_controller_->IsSupported()));
   } else {
     result->NotImplemented();
