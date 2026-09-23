@@ -2,7 +2,7 @@
 
 [![Pub Version](https://img.shields.io/pub/v/app_badge_plus)](https://pub.dev/packages/app_badge_plus) [![Pub Points](https://img.shields.io/pub/points/app_badge_plus)](https://pub.dev/packages/app_badge_plus) [![GitHub](https://img.shields.io/badge/github-app_badge_plus-blue?logo=github)](https://github.com/windows7lake/app_badge_plus)
 
-A Flutter plugin for adding badges to your app icon. Supports iOS, Android, and macOS.
+A Flutter plugin for adding badges to your app icon. Supports iOS, Android, macOS, and Windows.
 
 ![iOS](https://raw.githubusercontent.com/windows7lake/app_badge_plus/main/screenshot/iOS.png)
 ![pixel](https://raw.githubusercontent.com/windows7lake/app_badge_plus/main/screenshot/pixel.png)
@@ -22,6 +22,7 @@ A Flutter plugin for adding badges to your app icon. Supports iOS, Android, and 
     - HTC
     - ZTX
 - macOS
+- Windows
 
 ## Mark
 
@@ -72,6 +73,17 @@ On iOS, when using with notification message, notification permission is require
 ### macOS
 
 On macOS, when using with notification message, notification permission is required.
+
+### Windows
+
+The badge is shown on the app's taskbar icon. Apps running with package identity,
+such as MSIX-packaged apps, use the badge notification API from the
+[Windows app badges](https://learn.microsoft.com/windows/apps/develop/notifications/badges)
+documentation. Unpackaged apps, which is how Flutter apps run by default, use the
+taskbar overlay icon instead, the Win32 counterpart of a taskbar badge.
+
+Counts above 99 are shown as the "more than 99" badge, matching the system badge
+templates.
 
 ### permission_handler 
 

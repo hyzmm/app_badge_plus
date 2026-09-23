@@ -1,3 +1,8 @@
+## 1.4.0
+
+* Add badges support for Windows. Apps running with package identity use the
+  badge notification API, unpackaged apps use the taskbar overlay icon.
+
 ## 1.3.4
 
 * Fix: Notification will be triggered multiple times when updateBadge.
